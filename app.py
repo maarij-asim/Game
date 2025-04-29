@@ -26,7 +26,7 @@ def get_winner(p1, p2):
     else:
         return "player2"
 
-st.title("🤫 Secret Turn: Rock, Paper, Scissors")
+st.title("Two players : Rock, Paper, Scissors game")
 
 if st.session_state.step == 1:
     st.subheader("Player 1's Turn (Player 2, please look away!)")
