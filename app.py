@@ -1,9 +1,20 @@
 import streamlit as st
 
-# Initialize session state
-for key in ["p1_choice", "p2_choice", "result", "p1_score", "p2_score"]:
-    if key not in st.session_state:
-        st.session_state[key] = None if "choice" in key else 0
+choices = ["rock", "paper", "scissors"]
+
+# Step state control
+if "step" not in st.session_state:
+    st.session_state.step = 1
+if "p1_choice" not in st.session_state:
+    st.session_state.p1_choice = None
+if "p2_choice" not in st.session_state:
+    st.session_state.p2_choice = None
+if "p1_score" not in st.session_state:
+    st.session_state.p1_score = 0
+if "p2_score" not in st.session_state:
+    st.session_state.p2_score = 0
+if "result" not in st.session_state:
+    st.session_state.result = ""
 
 def get_winner(p1, p2):
     if p1 == p2:
@@ -15,45 +26,47 @@ def get_winner(p1, p2):
     else:
         return "player2"
 
-# --- UI ---
-st.set_page_config(page_title="Two Player RPS", page_icon="🎮", layout="centered")
-st.title("👬 Rock, Paper, Scissors - 2 Players")
+st.title("🤫 Secret Turn: Rock, Paper, Scissors")
 
-choices = ["rock", "paper", "scissors"]
+if st.session_state.step == 1:
+    st.subheader("Player 1's Turn (Player 2, please look away!)")
+    st.session_state.p1_choice = st.selectbox("Choose your weapon:", choices, key="p1")
+    if st.button("Confirm Player 1's Choice"):
+        st.session_state.step = 2
+        st.experimental_rerun()
 
-st.subheader("Player 1")
-st.session_state.p1_choice = st.selectbox("Choose your weapon (Player 1):", choices, key="p1_select")
+elif st.session_state.step == 2:
+    st.subheader("Player 2's Turn (Player 1, no peeking!)")
+    st.session_state.p2_choice = st.selectbox("Choose your weapon:", choices, key="p2")
+    if st.button("Reveal Winner"):
+        winner = get_winner(st.session_state.p1_choice, st.session_state.p2_choice)
+        if winner == "tie":
+            st.session_state.result = "🤝 It's a tie!"
+        elif winner == "player1":
+            st.session_state.result = "🎉 Player 1 wins!"
+            st.session_state.p1_score += 1
+        else:
+            st.session_state.result = "🏆 Player 2 wins!"
+            st.session_state.p2_score += 1
+        st.session_state.step = 3
+        st.experimental_rerun()
 
-st.subheader("Player 2")
-st.session_state.p2_choice = st.selectbox("Choose your weapon (Player 2):", choices, key="p2_select")
-
-if st.button("🎯 Reveal Winner"):
-    p1 = st.session_state.p1_choice
-    p2 = st.session_state.p2_choice
-
-    winner = get_winner(p1, p2)
-    if winner == "tie":
-        st.session_state.result = "🤝 It's a tie!"
-    elif winner == "player1":
-        st.session_state.p1_score += 1
-        st.session_state.result = "🎉 Player 1 wins!"
-    else:
-        st.session_state.p2_score += 1
-        st.session_state.result = "🏆 Player 2 wins!"
-
-    st.markdown(f"**Player 1 chose:** {p1} | **Player 2 chose:** {p2}")
+elif st.session_state.step == 3:
+    st.subheader("🔍 Results")
+    st.markdown(f"**Player 1 chose:** {st.session_state.p1_choice}")
+    st.markdown(f"**Player 2 chose:** {st.session_state.p2_choice}")
     st.subheader(st.session_state.result)
+    st.markdown("---")
+    st.markdown(f"📊 **Score** - Player 1: {st.session_state.p1_score} | Player 2: {st.session_state.p2_score}")
+    if st.button("Play Again"):
+        st.session_state.step = 1
+        st.session_state.p1_choice = None
+        st.session_state.p2_choice = None
+        st.session_state.result = ""
+        st.experimental_rerun()
 
-# Scoreboard
-st.markdown("---")
-st.markdown("### 📊 Scoreboard")
-st.write(f"**Player 1:** {st.session_state.p1_score} | **Player 2:** {st.session_state.p2_score}")
-
-# Reset game
 if st.button("🔄 Reset Game"):
-    st.session_state.p1_choice = None
-    st.session_state.p2_choice = None
-    st.session_state.result = ""
-    st.session_state.p1_score = 0
-    st.session_state.p2_score = 0
+    for key in ["step", "p1_choice", "p2_choice", "p1_score", "p2_score", "result"]:
+        st.session_state[key] = 0 if "score" in key else None
+    st.session_state.step = 1
     st.experimental_rerun()
