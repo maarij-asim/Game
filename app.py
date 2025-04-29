@@ -1,26 +1,59 @@
-import random
 import streamlit as st
 
-def play_rps():
-    st.title("Rock, Paper, Scissors Game")
+# Initialize session state
+for key in ["p1_choice", "p2_choice", "result", "p1_score", "p2_score"]:
+    if key not in st.session_state:
+        st.session_state[key] = None if "choice" in key else 0
 
-    choices = ["rock", "paper", "scissors"]
-    player_choice = st.selectbox("Choose your weapon:", choices)
+def get_winner(p1, p2):
+    if p1 == p2:
+        return "tie"
+    elif (p1 == "rock" and p2 == "scissors") or \
+         (p1 == "scissors" and p2 == "paper") or \
+         (p1 == "paper" and p2 == "rock"):
+        return "player1"
+    else:
+        return "player2"
 
-    if st.button("Play"):
-        computer_choice = random.choice(choices)
+# --- UI ---
+st.set_page_config(page_title="Two Player RPS", page_icon="🎮", layout="centered")
+st.title("👬 Rock, Paper, Scissors - 2 Players")
 
-        st.write(f"**You chose:** {player_choice}")
-        st.write(f"**Computer chose:** {computer_choice}")
+choices = ["rock", "paper", "scissors"]
 
-        if player_choice == computer_choice:
-            st.info("It's a tie!")
-        elif (player_choice == "rock" and computer_choice == "scissors") or \
-             (player_choice == "scissors" and computer_choice == "paper") or \
-             (player_choice == "paper" and computer_choice == "rock"):
-            st.success("You win!")
-        else:
-            st.error("Computer wins!")
+st.subheader("Player 1")
+st.session_state.p1_choice = st.selectbox("Choose your weapon (Player 1):", choices, key="p1_select")
 
-if __name__ == "__main__":
-    play_rps()
+st.subheader("Player 2")
+st.session_state.p2_choice = st.selectbox("Choose your weapon (Player 2):", choices, key="p2_select")
+
+if st.button("🎯 Reveal Winner"):
+    p1 = st.session_state.p1_choice
+    p2 = st.session_state.p2_choice
+
+    winner = get_winner(p1, p2)
+    if winner == "tie":
+        st.session_state.result = "🤝 It's a tie!"
+    elif winner == "player1":
+        st.session_state.p1_score += 1
+        st.session_state.result = "🎉 Player 1 wins!"
+    else:
+        st.session_state.p2_score += 1
+        st.session_state.result = "🏆 Player 2 wins!"
+
+    st.markdown(f"**Player 1 chose:** {p1} | **Player 2 chose:** {p2}")
+    st.subheader(st.session_state.result)
+
+# Scoreboard
+st.markdown("---")
+st.markdown("### 📊 Scoreboard")
+st.write(f"**Player 1:** {st.session_state.p1_score} | **Player 2:** {st.session_state.p2_score}")
+
+# Reset game
+if st.button("🔄 Reset Game"):
+    st.session_state.p1_choice = None
+    st.session_state.p2_choice = None
+    st.session_state.result = ""
+    st.session_state.p1_score = 0
+    st.session_state.p2_score = 0
+    st.experimental_rerun()
