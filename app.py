@@ -60,29 +60,30 @@
 
 
 import streamlit as st
-import os
+from openai import OpenAI
 
+st.title("ChatGPT-like clone")
 
-# Set your OpenAI API key (secure method)
-os.environ["OPENAI_API_KEY"] = "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"  # Replace with your real key
+# Set OpenAI API key from Streamlit secrets
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-st.title("Chatbot Maarij (OpenAI)")
+# Set a default model
+if "openai_model" not in st.session_state:
+    st.session_state["openai_model"] = "gpt-3.5-turbo"
 
-# Initialize the OpenAI Chat Model (use "gpt-4" or "gpt-3.5-turbo")
-llm = ChatOpenAI(model="gpt-4", temperature=0.7)
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# User input
-chat_input = st.chat_input("Ask the chatbot")
+# Display chat messages from history on app rerun
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-if chat_input:
-    st.chat_message("user").write(chat_input)
-
-    try:
-        # Get the assistant's response
-        response = llm.invoke(chat_input)
-        assistant_response = response.content  # Extract message text
-        st.chat_message("assistant").write(assistant_response)
-    except Exception as e:
-        st.chat_message("assistant").write(f"Sorry, something went wrong: {e}")
-
-
+# Accept user input
+if prompt := st.chat_input("What is up?"):
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    # Display user message in chat message container
+    with st.chat_message("user"):
+        st.markdown(prompt)
