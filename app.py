@@ -61,7 +61,7 @@
 
 import streamlit as st
 import os
-from langchain_openai import ChatOpenAI
+
 
 # Set your OpenAI API key (secure method)
 os.environ["OPENAI_API_KEY"] = "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"  # Replace with your real key
